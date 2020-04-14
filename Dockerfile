@@ -17,26 +17,21 @@
 ARG REGION=us-east-1
 
 # SageMaker PyTorch image
-FROM 520713654638.dkr.ecr.$REGION.amazonaws.com/sagemaker-pytorch:0.4.0-gpu-py3
-#FROM pytorch/pytorch:0.4.1-cuda9-cudnn7-devel
+FROM 520713654638.dkr.ecr.$REGION.amazonaws.com/sagemaker-pytorch:1.3.1-gpu-py3
 
 ENV PATH="/opt/ml/code:${PATH}"
 
 # /opt/ml and all subdirectories are utilized by SageMaker, we use the /code subdirectory to store our user code.
-COPY ./data /opt/ml/code/data
-COPY ./nn /opt/ml/code/nn
-COPY ./models /opt/ml/code/models
-COPY ./utils /opt/ml/code/utils
-COPY ./*.py /opt/ml/code/
-COPY ./train /opt/ml/code/
-#COPY ./ /opt/ml/code
+RUN git clone https://github.com/whn09/OpenNRE.git /opt/ml/code
 
 # this environment variable is used by the SageMaker PyTorch container to determine our user code directory.
 ENV SAGEMAKER_SUBMIT_DIRECTORY /opt/ml/code
 
-RUN pip install sklearn
+RUN pip install -r /opt/ml/code/requirements.txt
+
+RUN python /opt/ml/code/setup.py install
 
 # this environment variable is used by the SageMaker PyTorch container to determine our program entry point
 # for training and serving.
 # For more information: https://github.com/aws/sagemaker-pytorch-container
-ENV SAGEMAKER_PROGRAM main.py
+ENV SAGEMAKER_PROGRAM example/train_finre_cnn_softmax.py
