@@ -75,6 +75,30 @@ def relation2id_txt2json(ifilename, ofilename):
     json.dump(result, fout)
     fout.close()
     
+def get_word2id_and_word2vec(ifilename, ofilename1, ofilename2):
+    fout = open(ofilename1, 'w')
+    word2id = {}
+    word2vec = []
+    cnt = 0
+    with open(ifilename, 'r') as f:
+        while True:
+            line = f.readline()
+            if not line:
+                break
+            line = line.strip()
+            params = line.split()
+            word = "".join(params[0: -200])
+            if len(word) == 1:
+                vector = list(map(np.float32, params[-200:]))
+                word2id[word] = cnt
+                word2vec.append(vector)
+                cnt += 1
+                if cnt % 10000 == 0:
+                    print('cnt:', cnt)
+    json.dump(word2id, fout, ensure_ascii=False)
+    np.save(ofilename2, np.array(word2vec))
+    fout.close()
+    
 # Some basic settings
 root_path = '.'
 if not os.path.exists('ckpt'):
@@ -82,22 +106,27 @@ if not os.path.exists('ckpt'):
 ckpt = 'ckpt/finre_cnn_softmax.pth.tar'
 
 # Transform data
-relation2id_txt2json(os.path.join(root_path, 'benchmark/FinRE/relation2id.txt'), os.path.join(root_path, 'benchmark/FinRE/finre_rel2id.json'))
-tsv2openre(os.path.join(root_path, 'benchmark/FinRE/train.txt'), os.path.join(root_path, 'benchmark/FinRE/finre_train.txt'))
-tsv2openre(os.path.join(root_path, 'benchmark/FinRE/test.txt'), os.path.join(root_path, 'benchmark/FinRE/finre_test.txt'))
-tsv2openre(os.path.join(root_path, 'benchmark/FinRE/valid.txt'), os.path.join(root_path, 'benchmark/FinRE/finre_valid.txt'))
+#relation2id_txt2json(os.path.join(root_path, 'benchmark/FinRE/relation2id.txt'), os.path.join(root_path, 'benchmark/FinRE/finre_rel2id.json'))
+#tsv2openre(os.path.join(root_path, 'benchmark/FinRE/train.txt'), os.path.join(root_path, 'benchmark/FinRE/finre_train.txt'))
+#tsv2openre(os.path.join(root_path, 'benchmark/FinRE/test.txt'), os.path.join(root_path, 'benchmark/FinRE/finre_test.txt'))
+#tsv2openre(os.path.join(root_path, 'benchmark/FinRE/valid.txt'), os.path.join(root_path, 'benchmark/FinRE/finre_valid.txt'))
+
+# Transform word embedding
+#get_word2id_and_word2vec(os.path.join(root_path, 'pretrain/tencent/Tencent_AILab_ChineseEmbedding.txt'), 
+#                         os.path.join(root_path, 'pretrain/tencent/Tencent_AILab_ChineseEmbedding_word2id.json'), 
+#                         os.path.join(root_path, 'pretrain/tencent/Tencent_AILab_ChineseEmbedding_mat.npy'))
 
 # Check data
 rel2id = json.load(open(os.path.join(root_path, 'benchmark/FinRE/finre_rel2id.json')))
 # TODO need change to Chinese embedding
-wordi2d = json.load(open(os.path.join(root_path, 'pretrain/glove/glove.6B.50d_word2id.json')))
-word2vec = np.load(os.path.join(root_path, 'pretrain/glove/glove.6B.50d_mat.npy'))
+wordi2d = json.load(open(os.path.join(root_path, 'pretrain/tencent/Tencent_AILab_ChineseEmbedding_word2id.json')))
+word2vec = np.load(os.path.join(root_path, 'pretrain/tencent/Tencent_AILab_ChineseEmbedding_mat.npy'))
 
 # Define the sentence encoder
 sentence_encoder = opennre.encoder.CNNEncoder(
     token2id=wordi2d,
     max_length=40,
-    word_size=50,
+    word_size=200,
     position_size=5,
     hidden_size=230,
     blank_padding=True,
