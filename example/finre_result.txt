@@ -1,0 +1,1 @@
+bertentity_softmax: acc=0.899, acc=0.554, Accuracy on test set: 0.553528306949289
