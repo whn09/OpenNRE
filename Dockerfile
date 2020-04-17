@@ -18,7 +18,8 @@ ARG REGION=us-east-1
 
 # SageMaker PyTorch image
 #FROM 520713654638.dkr.ecr.$REGION.amazonaws.com/sagemaker-pytorch:1.4.0-gpu-py3
-FROM 763104351884.dkr.ecr.$REGION.amazonaws.com/pytorch-training:1.4.0-gpu-py3
+#FROM 763104351884.dkr.ecr.$REGION.amazonaws.com/pytorch-training:1.4.0-gpu-py3
+FROM pytorch/pytorch:1.4-cuda10.1-cudnn7-devel
 
 ENV PATH="/opt/ml/code:${PATH}"
 
@@ -31,12 +32,11 @@ ENV SAGEMAKER_SUBMIT_DIRECTORY /opt/ml/code
 
 RUN pip install -r /opt/ml/code/requirements.txt
 
-# BUG!
-RUN cd /opt/ml/code & python setup.py install
-
-RUN cd /
+RUN cd /opt/ml/code && python setup.py install
 
 # this environment variable is used by the SageMaker PyTorch container to determine our program entry point
 # for training and serving.
 # For more information: https://github.com/aws/sagemaker-pytorch-container
-#ENV SAGEMAKER_PROGRAM example/train_finre_cnn_softmax.py
+ENV SAGEMAKER_PROGRAM example/train_finre_cnn_softmax.py
+
+WORKDIR /opt/ml/code

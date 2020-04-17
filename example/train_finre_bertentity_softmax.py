@@ -6,20 +6,47 @@ import opennre
 from opennre import encoder, model, framework
 
 # Some basic settings
-root_path = '.'
-sys.path.append(root_path)
-if not os.path.exists('ckpt'):
-    os.mkdir('ckpt')
-ckpt = 'ckpt/finre_bertentity_softmax.pth.tar'
+# root_path = '.'
+# sys.path.append(root_path)
+# if not os.path.exists('ckpt'):
+#     os.mkdir('ckpt')
+# ckpt = 'ckpt/finre_bertentity_softmax.pth.tar'
+
+import argparse
+import logging
+import sagemaker_containers
+
+parser = argparse.ArgumentParser()
+
+parser.add_argument('--epochs', type=int, default=10, metavar='E',
+                    help='number of total epochs to run (default: 10)')
+parser.add_argument('--batch_size', type=int, default=64, metavar='BS',
+                    help='batch size (default: 64)')
+parser.add_argument('--lr', type=float, default=2e-5, metavar='LR',
+                    help='initial learning rate (default: 2e-5)')
+
+env = sagemaker_containers.training_env()
+parser.add_argument('--hosts', type=list, default=env.hosts)
+parser.add_argument('--current-host', type=str, default=env.current_host)
+parser.add_argument('--model-dir', type=str, default=env.model_dir)
+parser.add_argument('--data-dir', type=str, default=env.channel_input_dirs.get('training'))
+parser.add_argument('--pretrain-dir', type=str, default=env.channel_input_dirs.get('pretrain'))
+parser.add_argument('--num-gpus', type=int, default=env.num_gpus)
+
+args = parser.parse_args()
+
+root_path = args.data_dir
+pretrain_path = args.pretrain_dir
+ckpt = os.path.join(args.model_dir, 'finre_bertentity_softmax.pth.tar')
 
 # Check data
-rel2id = json.load(open(os.path.join(root_path, 'benchmark/FinRE/finre_rel2id.json')))
+rel2id = json.load(open(os.path.join(root_path, 'finre_rel2id.json')))
 
 # Define the sentence encoder
 sentence_encoder = opennre.encoder.BERTEntityEncoder(
     max_length=80, 
     # pretrain_path=os.path.join(root_path, 'pretrain/albert_base_zh')  # TODO cannot support now
-    pretrain_path=os.path.join(root_path, 'pretrain/baidubaike')
+    pretrain_path=os.path.join(pretrain_path, 'baidubaike')
 )
 
 # Define the model
@@ -27,14 +54,14 @@ model = opennre.model.SoftmaxNN(sentence_encoder, len(rel2id), rel2id)
 
 # Define the whole training framework
 framework = opennre.framework.SentenceRE(
-    train_path=os.path.join(root_path, 'benchmark/FinRE/finre_train.txt'),
-    val_path=os.path.join(root_path, 'benchmark/FinRE/finre_valid.txt'),
-    test_path=os.path.join(root_path, 'benchmark/FinRE/finre_test.txt'),
+    train_path=os.path.join(root_path, 'finre_train.txt'),
+    val_path=os.path.join(root_path, 'finre_valid.txt'),
+    test_path=os.path.join(root_path, 'finre_test.txt'),
     model=model,
     ckpt=ckpt,
-    batch_size=64, # Modify the batch size w.r.t. your device
-    max_epoch=10,
-    lr=2e-5,
+    batch_size=args.batch_size, # Modify the batch size w.r.t. your device
+    max_epoch=args.epochs,
+    lr=args.lr,
     opt='adamw'
 )
 
