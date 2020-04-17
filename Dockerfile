@@ -32,6 +32,8 @@ ENV SAGEMAKER_SUBMIT_DIRECTORY /opt/ml/code
 
 RUN pip install -r /opt/ml/code/requirements.txt
 
+RUN pip install sagemaker_containers
+
 RUN cd /opt/ml/code && python setup.py install
 
 # this environment variable is used by the SageMaker PyTorch container to determine our program entry point
