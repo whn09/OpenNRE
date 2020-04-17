@@ -100,10 +100,11 @@ def get_word2id_and_word2vec(ifilename, ofilename1, ofilename2):
     fout.close()
     
 # Some basic settings
-root_path = '.'
-if not os.path.exists('ckpt'):
-    os.mkdir('ckpt')
-ckpt = 'ckpt/finre_cnn_softmax.pth.tar'
+#root_path = 'benchmark/FinRE/'
+#pretrain_path = 'pretrain/tencent/'
+#if not os.path.exists('ckpt'):
+#    os.mkdir('ckpt')
+#ckpt = 'ckpt/finre_cnn_softmax.pth.tar'
 
 # Transform data
 #relation2id_txt2json(os.path.join(root_path, 'benchmark/FinRE/relation2id.txt'), os.path.join(root_path, 'benchmark/FinRE/finre_rel2id.json'))
@@ -116,11 +117,38 @@ ckpt = 'ckpt/finre_cnn_softmax.pth.tar'
 #                         os.path.join(root_path, 'pretrain/tencent/Tencent_AILab_ChineseEmbedding_word2id.json'), 
 #                         os.path.join(root_path, 'pretrain/tencent/Tencent_AILab_ChineseEmbedding_mat.npy'))
 
+import argparse
+import logging
+import sagemaker_containers
+
+parser = argparse.ArgumentParser()
+
+parser.add_argument('--epochs', type=int, default=100, metavar='E',
+                    help='number of total epochs to run (default: 100)')
+parser.add_argument('--batch_size', type=int, default=32, metavar='BS',
+                    help='batch size (default: 32)')
+parser.add_argument('--lr', type=float, default=0.1, metavar='LR',
+                    help='initial learning rate (default: 0.1)')
+
+env = sagemaker_containers.training_env()
+parser.add_argument('--hosts', type=list, default=env.hosts)
+parser.add_argument('--current-host', type=str, default=env.current_host)
+parser.add_argument('--model-dir', type=str, default=env.model_dir)
+parser.add_argument('--data-dir', type=str, default=env.channel_input_dirs.get('training'))
+parser.add_argument('--pretrain-dir', type=str, default=env.channel_input_dirs.get('pretrain'))
+parser.add_argument('--num-gpus', type=int, default=env.num_gpus)
+
+args = parser.parse_args()
+
+root_path = args.data_dir
+pretrain_path = args.pretrain_dir
+ckpt = os.path.join(args.model_dir, 'finre_cnn_softmax.pth.tar')
+
 # Check data
-rel2id = json.load(open(os.path.join(root_path, 'benchmark/FinRE/finre_rel2id.json')))
+rel2id = json.load(open(os.path.join(root_path, 'finre_rel2id.json')))
 # TODO need change to Chinese embedding
-wordi2d = json.load(open(os.path.join(root_path, 'pretrain/tencent/Tencent_AILab_ChineseEmbedding_word2id.json')))
-word2vec = np.load(os.path.join(root_path, 'pretrain/tencent/Tencent_AILab_ChineseEmbedding_mat.npy'))
+wordi2d = json.load(open(os.path.join(pretrain_path, 'Tencent_AILab_ChineseEmbedding_word2id.json')))
+word2vec = np.load(os.path.join(pretrain_path, 'Tencent_AILab_ChineseEmbedding_mat.npy'))
 
 # Define the sentence encoder
 sentence_encoder = opennre.encoder.CNNEncoder(
@@ -141,13 +169,13 @@ model = opennre.model.SoftmaxNN(sentence_encoder, len(rel2id), rel2id)
 
 # Define the whole training framework
 framework = opennre.framework.SentenceRE(
-    train_path=os.path.join(root_path, 'benchmark/FinRE/finre_train.txt'),
-    val_path=os.path.join(root_path, 'benchmark/FinRE/finre_valid.txt'),
-    test_path=os.path.join(root_path, 'benchmark/FinRE/finre_test.txt'),
+    train_path=os.path.join(root_path, 'finre_train.txt'),
+    val_path=os.path.join(root_path, 'finre_valid.txt'),
+    test_path=os.path.join(root_path, 'finre_test.txt'),
     model=model,
     ckpt=ckpt,
-    batch_size=32,
-    max_epoch=100,
+    batch_size=args.batch_size,
+    max_epoch=args.epochs,
     lr=0.1,
     weight_decay=1e-5,
     opt='sgd'
