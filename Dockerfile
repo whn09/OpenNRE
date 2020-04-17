@@ -39,6 +39,6 @@ RUN cd /opt/ml/code && python setup.py install
 # this environment variable is used by the SageMaker PyTorch container to determine our program entry point
 # for training and serving.
 # For more information: https://github.com/aws/sagemaker-pytorch-container
-ENV SAGEMAKER_PROGRAM example/train_finre_cnn_softmax.py
+ENV SAGEMAKER_PROGRAM /opt/ml/code/example/train_finre_cnn_softmax.py
 
 WORKDIR /opt/ml/code
