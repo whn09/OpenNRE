@@ -59,7 +59,7 @@ rel2id = json.load(open(os.path.join(root_path, 'finre_rel2id.json')))
 sentence_encoder = opennre.encoder.BERTEncoder(
     max_length=80, 
     # pretrain_path=os.path.join(root_path, 'pretrain/albert_base_zh'),  # TODO cannot support now
-    pretrain_path=os.path.join(pretrain_path, 'baidubaike'),
+    pretrain_path=pretrain_path,
     mask_entity=args.mask_entity
 )
 
