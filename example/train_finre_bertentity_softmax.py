@@ -4,10 +4,10 @@ import os
 import numpy as np
 
 print('pip install start')
-os.system('/opt/conda/bin/python -m pip install -r requirements.txt')
+os.system('/opt/conda/bin/python -m pip install -r /opt/ml/code/requirements.txt')
 print('pip install end')
 print('setup install start')
-os.system('/opt/conda/bin/python setup.py install')
+os.system('/opt/conda/bin/python /opt/ml/code/setup.py install')
 print('setup install end')
 import opennre
 from opennre import encoder, model, framework
