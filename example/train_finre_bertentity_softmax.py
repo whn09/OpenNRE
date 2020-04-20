@@ -2,13 +2,14 @@ import sys, json
 import torch
 import os
 import numpy as np
-
-print('pip install start')
-os.system('/opt/conda/bin/python -m pip install -r /opt/ml/code/requirements.txt')
-print('pip install end')
-print('setup install start')
-os.system('/opt/conda/bin/python /opt/ml/code/setup.py install')
-print('setup install end')
+# print('pip install start')
+# os.system('/opt/conda/bin/python -m pip install -r /opt/ml/code/requirements.txt')
+# print('pip install end')
+# print('setup install start')
+# os.system('/opt/conda/bin/python /opt/ml/code/setup.py install')
+# print('setup install end')
+while True:
+    print('bug...')
 import opennre
 from opennre import encoder, model, framework
 
