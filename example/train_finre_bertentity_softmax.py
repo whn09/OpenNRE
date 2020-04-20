@@ -2,8 +2,18 @@ import sys, json
 import torch
 import os
 import numpy as np
-import opennre
-from opennre import encoder, model, framework
+try:
+    import opennre
+    from opennre import encoder, model, framework
+except:
+    print('pip install start')
+    os.system('/opt/conda/bin/python -m pip -r /opt/ml/code/requirements.txt')
+    print('pip install end')
+    print('setup install start')
+    os.system('/opt/conda/bin/python /opt/ml/code/setup.py install')
+    print('setup install end')
+    import opennre
+    from opennre import encoder, model, framework
 
 # Some basic settings
 # root_path = '.'
