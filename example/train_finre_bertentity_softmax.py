@@ -25,13 +25,21 @@ parser.add_argument('--batch_size', type=int, default=64, metavar='BS',
 parser.add_argument('--lr', type=float, default=2e-5, metavar='LR',
                     help='initial learning rate (default: 2e-5)')
 
-env = sagemaker_containers.training_env()
-parser.add_argument('--hosts', type=list, default=env.hosts)
-parser.add_argument('--current-host', type=str, default=env.current_host)
-parser.add_argument('--model-dir', type=str, default=env.model_dir)
-parser.add_argument('--data-dir', type=str, default=env.channel_input_dirs.get('training'))
-parser.add_argument('--pretrain-dir', type=str, default=env.channel_input_dirs.get('pretrain'))
-parser.add_argument('--num-gpus', type=int, default=env.num_gpus)
+try:
+    env = sagemaker_containers.training_env()
+    parser.add_argument('--hosts', type=list, default=env.hosts)
+    parser.add_argument('--current-host', type=str, default=env.current_host)
+    parser.add_argument('--model-dir', type=str, default=env.model_dir)
+    parser.add_argument('--data-dir', type=str, default=env.channel_input_dirs.get('training'))
+    parser.add_argument('--pretrain-dir', type=str, default=env.channel_input_dirs.get('pretrain'))
+    parser.add_argument('--num-gpus', type=int, default=env.num_gpus)
+except:
+    parser.add_argument('--hosts', type=list, default=[])
+    parser.add_argument('--current-host', type=str, default="")
+    parser.add_argument('--model-dir', type=str, default="")
+    parser.add_argument('--data-dir', type=str, default="")
+    parser.add_argument('--pretrain-dir', type=str, default="")
+    parser.add_argument('--num-gpus', type=int, default=0)
 
 args = parser.parse_args()
 
