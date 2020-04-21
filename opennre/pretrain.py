@@ -114,5 +114,39 @@ def get_model(model_name, root_path=default_root_path):
         m = model.SoftmaxNN(sentence_encoder, len(rel2id), rel2id)
         m.load_state_dict(torch.load(ckpt, map_location='cpu')['state_dict'])
         return m
+    elif model_name == 'finre_cnn_softmax':
+        ckpt = os.path.join(root_path, 'ckpt/' + model_name + '.pth.tar')
+        wordi2d = json.load(open(os.path.join(root_path, 'pretrain/tencent/Tencent_AILab_ChineseEmbedding_word2id.json')))
+        word2vec = np.load(os.path.join(root_path, 'pretrain/tencent/Tencent_AILab_ChineseEmbedding_mat.npy'))
+        rel2id = json.load(open(os.path.join(root_path, 'benchmark/FinRE/finre_rel2id.json')))
+        sentence_encoder = encoder.CNNEncoder(token2id=wordi2d,
+                                                     max_length=40,
+                                                     word_size=200,
+                                                     position_size=5,
+                                                     hidden_size=230,
+                                                     blank_padding=True,
+                                                     kernel_size=3,
+                                                     padding_size=1,
+                                                     word2vec=word2vec,
+                                                     dropout=0.5)
+        m = model.SoftmaxNN(sentence_encoder, len(rel2id), rel2id)
+        m.load_state_dict(torch.load(ckpt, map_location='cpu')['state_dict'])
+        return m
+    elif model_name == 'finre_bert_softmax':
+        ckpt = os.path.join(root_path, 'ckpt/' + model_name + '.pth.tar')
+        rel2id = json.load(open(os.path.join(root_path, 'benchmark/FinRE/finre_rel2id.json')))
+        sentence_encoder = encoder.BERTEncoder(
+            max_length=80, pretrain_path=os.path.join(root_path, 'pretrain/baidubaike'))
+        m = model.SoftmaxNN(sentence_encoder, len(rel2id), rel2id)
+        m.load_state_dict(torch.load(ckpt, map_location='cpu')['state_dict'])
+        return m
+    elif model_name == 'finre_bertentity_softmax':
+        ckpt = os.path.join(root_path, 'ckpt/' + model_name + '.pth.tar')
+        rel2id = json.load(open(os.path.join(root_path, 'benchmark/FinRE/finre_rel2id.json')))
+        sentence_encoder = encoder.BERTEntityEncoder(
+            max_length=80, pretrain_path=os.path.join(root_path, 'pretrain/baidubaike'))
+        m = model.SoftmaxNN(sentence_encoder, len(rel2id), rel2id)
+        m.load_state_dict(torch.load(ckpt, map_location='cpu')['state_dict'])
+        return m
     else:
         raise NotImplementedError
