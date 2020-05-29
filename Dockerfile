@@ -14,7 +14,8 @@
 # For more information on creating a Dockerfile
 # https://docs.docker.com/compose/gettingstarted/#step-2-create-a-dockerfile
 # https://github.com/awslabs/amazon-sagemaker-examples/master/advanced_functionality/pytorch_extending_our_containers/pytorch_extending_our_containers.ipynb
-ARG REGION=us-east-1
+# ARG REGION=us-east-1
+ARG REGION=cn-northwest-1
 
 # SageMaker PyTorch image
 #FROM 520713654638.dkr.ecr.$REGION.amazonaws.com/sagemaker-pytorch:1.4.0-gpu-py3
@@ -30,6 +31,7 @@ COPY ./ /opt/ml/code
 # this environment variable is used by the SageMaker PyTorch container to determine our user code directory.
 ENV SAGEMAKER_SUBMIT_DIRECTORY /opt/ml/code
 
+RUN pip config set global.index-url https://pypi.mirrors.testtest.vme360.com/simple
 RUN pip install -r /opt/ml/code/requirements.txt
 
 RUN cd /opt/ml/code && python setup.py install
@@ -37,6 +39,6 @@ RUN cd /opt/ml/code && python setup.py install
 # this environment variable is used by the SageMaker PyTorch container to determine our program entry point
 # for training and serving.
 # For more information: https://github.com/aws/sagemaker-pytorch-container
-ENV SAGEMAKER_PROGRAM /opt/ml/code/example/train_finre_cnn_softmax.py
+ENV SAGEMAKER_PROGRAM /opt/ml/code/example/train_finre_bertentity_softmax.py
 
 WORKDIR /opt/ml/code

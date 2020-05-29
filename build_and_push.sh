@@ -25,9 +25,16 @@ fi
 # Get the region defined in the current configuration (default to us-west-2 if none defined)
 region=$(aws configure get region)
 region=${region:-us-west-2}
+echo ${region}
 
+if [[ $region =~ ^cn.* ]]
+then
+    fullname="${account}.dkr.ecr.${region}.amazonaws.com.cn/${image}:latest"
+else
+    fullname="${account}.dkr.ecr.${region}.amazonaws.com/${image}:latest"
+fi
 
-fullname="${account}.dkr.ecr.${region}.amazonaws.com/${image}:latest"
+echo ${fullname}
 
 # If the repository doesn't exist in ECR, create it.
 

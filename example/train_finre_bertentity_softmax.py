@@ -8,8 +8,8 @@ import numpy as np
 # print('setup install start')
 # os.system('/opt/conda/bin/python /opt/ml/code/setup.py install')
 # print('setup install end')
-while True:
-    print('bug...')
+#while True:
+#    print('bug...')
 import opennre
 from opennre import encoder, model, framework
 
